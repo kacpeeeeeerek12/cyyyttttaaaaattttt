@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Codzienny Cytat</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet" />
+<style>
+  body {
+    margin:0; padding:20px; background:#9fc6e2; font-family: Arial, sans-serif;
+    display:flex; justify-content:center; min-height:100vh; align-items:flex-start;
+  }
+  #container {
+    max-width:600px; width:90%; background:#fff; border-radius:15px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); padding:20px;
+    display:flex; flex-direction: column; align-items:center;
+  }
+  h1 {
+    font-family: 'Pacifico', cursive;
+    color:#1e3a8a;
+    font-size: 30px;
+    text-align:center;
+    margin: 0 0 20px 0;
+  }
+  #quote-box {
+    background: linear-gradient(135deg, #3b5998, #5a8dee);
+    color:#fff;
+    border-radius:15px;
+    padding:20px;
+    min-height:120px;
+    font-size:18px;
+    text-align:center;
+    display:flex; align-items:center; justify-content:center;
+    user-select:none;
+  }
+  #btn-draw, #btn-receive, #btn-redraw {
+    margin-top: 15px;
+    background: linear-gradient(135deg, #3b5998, #5a8dee);
+    color:#fff;
+    font-weight:700;
+    border:none;
+    border-radius:12px;
+    padding:14px 24px;
+    font-size:16px;
+    cursor:pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    user-select:none;
+    animation: pulse 4s ease-in-out infinite;
+  }
+  #btn-draw:hover:not(:disabled),
+  #btn-receive:hover:not(:disabled),
+  #btn-redraw:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(90,141,238,0.7);
+  }
+  #btn-draw:disabled,
+  #btn-receive:disabled,
+  #btn-redraw:disabled {
+    background:#999;
+    cursor:not-allowed;
+    animation:none;
+    transform:none;
+    box-shadow:none;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+  }
+  #streak-info {
+    margin-top:15px;
+    color:#1e3a8a;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 18px;
+  }
+  #countdown {
+    margin-top:10px;
+    color:#1e3a8a;
+    font-style: italic;
+    font-size: 16px;
+  }
+  #coins-info {
+    margin-top: 10px;
+    font-weight: 600;
+    color: #1e3a8a;
+    font-size: 18px;
+  }
+  #medals-container {
+    margin-top: 30px;
+    border: 2px solid #1e3a8a;
+    border-radius: 12px;
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    background: #e3edff;
+  }
+  #medals-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    color: #1e3a8a;
+  }
+  #medals-table th, #medals-table td {
+    border: 1px solid #1e3a8a;
+    padding: 8px 12px;
+    text-align: left;
+  }
+  #medals-table th {
+    background-color: #3b5998;
+    color: white;
+  }
+  #current-medal {
+    margin-top: 15px;
+    font-weight: 700;
+    font-size: 20px;
+    text-align: center;
+    color: #1e3a8a;
+  }
+  #history-container {
+    margin-top: 30px;
+    width: 100%;
+    background: #f0f7ff;
+    border-radius: 12px;
+    padding: 15px;
+    box-sizing: border-box;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #1e3a8a;
+  }
+  #history-container h2 {
+    color: #1e3a8a;
+    font-weight: 700;
+    font-size: 20px;
+    margin-top: 0;
+    text-align: center;
+  }
+  #history-list {
+    list-style:none;
+    padding-left: 0;
+    margin-top: 10px;
+  }
+  #history-list li {
+    padding: 6px 10px;
+    border-bottom: 1px solid #a4c0ff;
+    color: #1e3a8a;
+    font-size: 15px;
+  }
+
+  #bottom-panel {
+    margin-top: 25px;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 12px;
+  }
+  #bottom-panel > div {
+    flex: 1 1 45%;
+    min-width: 140px;
+    text-align: center;
+  }
+  #redraw-info {
+    color: #1e3a8a;
+    font-size: 14px;
+    margin-top: 5px;
+    font-style: italic;
+  }
+
+  /* Responsywność */
+  @media(max-width:400px){
+    #container {
+      padding:15px;
+    }
+    #btn-draw, #btn-receive, #btn-redraw {
+      width: 100%;
+      padding: 14px 0;
+      margin-top: 10px;
+    }
+    #bottom-panel {
+      flex-direction: column;
+      align-items: center;
+    }
+    #bottom-panel > div {
+      flex: 1 1 100%;
+      max-width: 100%;
+    }
+  }
+</style>
+</head>
+<body>
+  <div id="container" role="main" aria-label="Aplikacja do losowania cytatów motywujących">
+    <h1>Codzienny Cytat</h1>
+    <div id="quote-box" aria-live="polite" aria-atomic="true">
+      Kliknij „Losuj Cytat”, aby rozpocząć.
+    </div>
+    <button id="btn-draw" aria-describedby="countdown coins-info" aria-disabled="false">Losuj Cytat</button>
+    <div id="streak-info" aria-live="polite"></div>
+    <div id="coins-info" aria-live="polite">Monety: 0</div>
+    <div id="countdown" aria-live="polite"></div>
+
+    <div id="bottom-panel" aria-label="Panel monet i dodatkowych opcji">
+      <div>
+        <button id="btn-receive" disabled>Odbierz monety za passę</button>
+        <div id="receive-info" style="color:#1e3a8a; font-size:14px; margin-top:5px;">Monety możesz odebrać po wylosowaniu cytatu każdego dnia.</div>
+      </div>
+      <div>
+        <button id="btn-redraw" disabled>Wylosuj ponownie (30 monet)</button>
+        <div id="redraw-info">Potrzebujesz 30 monet, aby wylosować cytat ponownie.</div>
+      </div>
+    </div>
+
+    <div id="medals-container" aria-label="Panel medali za passę">
+      <table id="medals-table" role="table" aria-describedby="medals-desc">
+        <thead>
+          <tr>
+            <th>Medal</th>
+            <th>Próg dni z rzędu</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Brązowy</td><td>2 dni</td></tr>
+          <tr><td>Miedziany</td><td>5 dni</td></tr>
+          <tr><td>Złoty</td><td>10 dni</td></tr>
+          <tr><td>Szmaragdowy</td><td>15 dni</td></tr>
+          <tr><td>Platynowy</td><td>20 dni</td></tr>
+          <tr><td>Oksynowy</td><td>25 dni</td></tr>
+          <tr><td>Diamentowy</td><td>27 dni</td></tr>
+          <tr><td>Medal Legendy</td><td>30 dni</td></tr>
+          <tr><td>Tytanowy</td><td>35 dni</td></tr>
+        </tbody>
+      </table>
+      <div id="current-medal" aria-live="polite">Aktualny medal: Brak</div>
+    </div>
+
+    <div id="history-container" aria-label="Historia wylosowanych cytatów">
+      <h2>Historia Cytatów</h2>
+      <ul id="history-list" aria-live="polite" aria-atomic="true"></ul>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const quotes = [
+    "Pan jest moim pasterzem, niczego mi nie braknie. (Psalm 23:1)",
+    "Wszystko mogę w Tym, który mnie wzmacnia. (Filipian 4:13)",
+    "Bóg jest miłością. (1 Jana 4:8)",
+    "Ufaj Panu z całego serca i nie polegaj na swoim rozumie. (Przysłów 3:5)",
+    "Niech będzie błogosławiony Bóg i Ojciec Pana naszego Jezusa Chrystusa. (2 Koryntian 1:3)",
+    "Nie lękaj się, bo Ja jestem z tobą. (Izajasz 41:10)",
+    "Miłość cierpliwa jest, łaskawa jest. (1 Koryntian 13:4)",
+    "Pan jest światłością moją i zbawieniem moim. (Psalm 27:1)",
+    "Błogosławieni czystego serca, albowiem oni Boga oglądać będą. (Mateusz 5:8)",
+    "Zawsze się radujcie. (1 Tesaloniczan 5:16)",
+    "Proście, a będzie wam dane. (Mateusz 7:7)",
+    "Pokój zostawiam wam, pokój mój daję wam. (Jan 14:27)",
+    "Pan jest moją mocą i tarczą. (Psalm 28:7)",
+    "Zaufaj Panu na wieki, bo Pan Bóg jest skałą wieczną. (Izajasz 26:4)",
+    "Jeśli Bóg za nami, któż przeciwko nam? (Rzymian 8:31)",
+    "Cokolwiek czynicie, z serca czyńcie jak dla Pana. (Kolosan 3:23)",
+    "Niech wasza miłość będzie nieobłudna. (Rzymian 12:9)",
+    "Pan jest blisko tych, którzy mają złamane serce. (Psalm 34:19)",
+    "Każdy, kto prosi, otrzymuje. (Łukasz 11:10)",
+    "Przyjdźcie do mnie wszyscy, którzy jesteście spracowani. (Mateusz 11:28)",
+    "Szukajcie najpierw królestwa Bożego. (Mateusz 6:33)",
+    "Nie bój się, bo Ja cię wybawiłem. (Izajasz 43:1)",
+    "Błogosławieni miłosierni, albowiem oni miłosierdzia dostąpią. (Mateusz 5:7)",
+    "Pan obdarza łaską i chwałą. (Psalm 84:11)",
+    "Ucz się, bo mądrość jest najcenniejsza. (Przysłów 4:7)",
+    "Bądźcie mocni i nie lękajcie się. (Jozue 1:9)",
+    "Pan wspiera wszystkich, którzy upadli. (Psalm 145:14)",
+    "Zachowujcie pokój, bo on jest Boży dar. (List do Filipian 4:7)",
+    "Wszystko ma swój czas. (Księga Koheleta 3:1)",
+    "Jesteś drogocennym dzieckiem Boga. (1 Piotra 2:9)",
+    "Niech wasza nadzieja będzie niezachwiana. (Hebrajczyków 6:19)",
+    "Pan jest schronieniem w czasach trudnych. (Psalm 46:1)",
+    "Przebaczajcie sobie nawzajem, jak i Bóg przebaczył wam. (Efezjan 4:32)",
+    "Pokój Boży strzeże waszych serc. (Filipian 4:7)",
+    "Miłość nigdy nie ustaje. (1 Koryntian 13:8)",
+    "Słuchajcie Pana, a będziecie mądrzy. (Przysłów 1:5)",
+    "Pan jest blisko wszystkich, którzy Go wzywają. (Psalm 145:18)",
+    "Niech będzie błogosławione imię Pana. (Psalm 113:2)",
+    "Radość Pana jest waszą siłą. (Nehemiasz 8:10)",
+    "Przyjaciel kocha na każdy czas. (Przysłów 17:17)",
+    "Ufaj Panu, a będziesz bezpieczny. (Psalm 4:5)",
+    "Pan daje moc zmęczonemu. (Izajasz 40:29)",
+    "Przypatrz się Panu, a rozpromienisz się. (Psalm 34:5)",
+    "Niech Twoje słowa będą pełne łaski. (Kolosan 4:6)",
+    "Cieszcie się zawsze w Panu. (Filipian 4:4)",
+    "Bóg jest naszym schronieniem i mocą. (Psalm 46:1)",
+    "Niech nikt nie wzgardzi twoją młodością. (1 Tymoteusza 4:12)",
+    "Bądźcie miłosierni, jak Ojciec jest miłosierny. (Łukasz 6:36)",
+    "Pan jest dobry i łaskawy. (Psalm 100:5)",
+    "Słowo Boże jest lampą dla moich stóp. (Psalm 119:105)",
+    "Wielka jest wierność Pana. (Lamentacje 3:23)",
+    "Nie ustawajcie w modlitwie. (1 Tesaloniczan 5:17)",
+    "Pan uleczył moje rany. (Psalm 147:3)",
+    "Bądźcie zawsze radośni. (1 Tesaloniczan 5:16)",
+    "Szukajcie pokoju i dążcie do niego. (Psalm 34:14)",
+    "Niech będzie chwała Panu na wieki. (Psalm 89:52)",
+    "Pan jest źródłem wszelkiego dobra. (Jakuba 1:17)",
+    "Niech miłość wasza będzie bez obłudy. (Rzymian 12:9)",
+    "Pan jest światłem na mojej drodze. (Psalm 119:105)",
+    "Bóg umacnia słabych. (Izajasz 40:29)",
+    "Niech serca wasze nie lękają się. (Jan 14:27)",
+    "Ufaj Panu, a będziesz zbawiony. (Przysłów 3:5-6)",
+    "Niech pokój Chrystusa będzie w waszych sercach. (Kolosan 3:15)",
+    "Pan jest z wami, mocny w boju. (Sędziów 6:12)",
+    "Zawsze dziękujcie za wszystko. (1 Tesaloniczan 5:18)",
+    "Niech Pan błogosławi twoją pracę. (Psalm 90:17)",
+    "Pokładaj nadzieję w Panu. (Psalm 33:20)",
+    "Miłość twoja jest jak poranek. (Pieśń nad pieśniami 2:10)",
+    "Pan jest moją skałą i ucieczką. (Psalm 18:2)",
+    "Bóg jest wierny, który was powołał. (1 Tesaloniczan 5:24)",
+    "Niech Twoje serce będzie pełne pokoju. (Filipian 4:7)",
+    "Pan prowadzi mnie ścieżkami sprawiedliwości. (Psalm 23:3)",
+    "Ufaj Panu całym sercem. (Przysłów 3:5)",
+    "Bądźcie jedni dla drugich dobrzy i miłosierni. (Efezjan 4:32)",
+    "Miłość nie zazdrości. (1 Koryntian 13:4)",
+    "Pan jest moim zbawieniem. (Psalm 27:1)",
+    "Bądź silny i mężny. (Jozue 1:9)",
+    "Niech łaska Pana będzie z tobą. (2 Koryntian 13:14)",
+    "Pan jest moją twierdzą. (Psalm 18:2)",
+    "Ufaj Bogu, a wszystko będzie dobrze. (Przysłów 16:3)",
+    "Niech Twoja wiara będzie silna. (Mateusz 17:20)",
+    "Bóg jest naszą nadzieją i mocą. (Psalm 46:1)",
+    "Pan daje pokój sercu zmęczonemu. (Mateusz 11:28)",
+    "Niech Twoje dni będą błogosławione. (Psalm 128:1)",
+    "Bóg jest miłością i światłością. (1 Jana 4:8)",
+    "Niech będzie chwała Bogu na wysokościach. (Łukasz 2:14)",
+    "Pokój Boży niech strzeże waszych serc. (Filipian 4:7)",
+    "Miłość twoja nigdy nie ustaje. (1 Koryntian 13:8)",
+    "Pan jest blisko wszystkich, którzy Go wzywają. (Psalm 145:18)",
+    "Niech Twoja droga będzie prosta. (Przysłów 3:6)",
+    "Bóg jest światłem w ciemności. (Psalm 27:1)",
+    "Ufaj Panu, a będziesz bezpieczny. (Psalm 4:5)",
+    "Niech Bóg błogosławi twój dom. (Psalm 128:5)",
+    "Bądźcie zawsze gotowi pomagać innym. (Galacjan 6:10)",
+    "Pan jest twoim obrońcą i przyjacielem. (Psalm 18:2)",
+    "Niech wasza wiara będzie niezachwiana. (Hebrajczyków 10:23)",
+    "Miłość pokonuje wszystko. (1 Koryntian 13:7)",
+    "Zaufaj Panu, a On cię poprowadzi. (Psalm 37:5)",
+    "Bóg jest naszym lekarzem i uzdrowicielem. (Psalm 103:3)",
+    "Niech Twoje serce będzie pełne radości. (Psalm 16:11)",
+    "Pan jest twoją siłą i mocą. (Psalm 28:7)",
+    "Ufaj Panu zawsze i wszędzie. (Przysłów 3:5)",
+    "Niech miłość Boża prowadzi twoje kroki. (Galacjan 5:22)",
+    "Bądź silny w wierze i nadziei. (1 Koryntian 16:13)",
+    "Pan jest ze mną, nie ulęknę się. (Psalm 23:4)",
+    "Niech Bóg obdarzy cię pokojem. (Filipian 4:7)",
+    "Miłość jest darem od Boga. (1 Koryntian 13:13)",
+    "Zaufaj Panu z całego serca. (Przysłów 3:5)",
+    "Bóg jest naszym światłem i zbawieniem. (Psalm 27:1)",
+    "Niech twoje życie będzie świadectwem wiary. (Mateusz 5:16)",
+    "Pan jest zawsze przy tobie. (Hebrajczyków 13:5)",
+    "Niech łaska Boża spocznie na tobie. (2 Koryntian 13:14)"
+  ];
+
+  // Medale i progi
+  const medals = [
+    {name: "Brązowy", threshold: 2},
+    {name: "Miedziany", threshold: 5},
+    {name: "Złoty", threshold: 10},
+    {name: "Szmaragdowy", threshold: 15},
+    {name: "Platynowy", threshold: 20},
+    {name: "Oksynowy", threshold: 25},
+    {name: "Diamentowy", threshold: 27},
+    {name: "Medal Legendy", threshold: 30},
+    {name: "Tytanowy", threshold: 35},
+  ];
+
+  const btnDraw = document.getElementById('btn-draw');
+  const btnReceive = document.getElementById('btn-receive');
+  const btnRedraw = document.getElementById('btn-redraw');
+  const quoteBox = document.getElementById('quote-box');
+  const streakInfo = document.getElementById('streak-info');
+  const countdown = document.getElementById('countdown');
+  const coinsInfo = document.getElementById('coins-info');
+  const currentMedal = document.getElementById('current-medal');
+  const historyList = document.getElementById('history-list');
+
+  // Format daty YYYY-MM-DD w strefie Europe/Warsaw
+  function getTodayPoland(){
+    const now = new Date();
+    // UTC+2 lub UTC+1 - uwzględniamy strefę
+    const tz = 'Europe/Warsaw';
+    const options = {timeZone: tz, year:'numeric', month:'2-digit', day:'2-digit'};
+    const parts = new Intl.DateTimeFormat('pl-PL', options).formatToParts(now);
+    let y,m,d;
+    for(const part of parts){
+      if(part.type==='year') y=part.value;
+      if(part.type==='month') m=part.value;
+      if(part.type==='day') d=part.value;
+    }
+    return `${y}-${m}-${d}`;
+  }
+  // Sprawdza czy day2 jest dzień po day1
+  function isNextDay(day1, day2){
+    const d1 = new Date(day1);
+    const d2 = new Date(day2);
+    const diff = (d2 - d1) / (1000*60*60*24);
+    return diff === 1;
+  }
+
+  // Ładujemy stan z localStorage
+  function loadState(){
+    const s = localStorage.getItem('dailyQuoteAppState');
+    return s ? JSON.parse(s) : null;
+  }
+  // Zapisujemy stan
+  function saveState(state){
+    localStorage.setItem('dailyQuoteAppState', JSON.stringify(state));
+  }
+
+  // Wylosuj indeks cytatu inny niż ostatnio
+  function drawQuoteIndex(lastIndex){
+    if(quotes.length===1) return 0;
+    let idx;
+    do{
+      idx = Math.floor(Math.random()*quotes.length);
+    } while(idx === lastIndex);
+    return idx;
+  }
+
+  // Oblicz aktualny medal na podstawie passy
+  function getCurrentMedal(streak){
+    let medal = 'Brak';
+    for(let i=medals.length-1; i>=0; i--){
+      if(streak >= medals[i].threshold){
+        medal = medals[i].name;
+        break;
+      }
+    }
+    return medal;
+  }
+
+  // Wyświetl historię cytatów
+  function renderHistory(history){
+    historyList.innerHTML = '';
+    const maxEntries = 20;
+    const entries = history.slice(-maxEntries).reverse();
+    entries.forEach(entry => {
+      const li = document.createElement('li');
+      li.textContent = `${entry.date}: ${quotes[entry.quoteIndex]}`;
+      historyList.appendChild(li);
+    });
+  }
+
+  // Aktualizacja UI
+  function updateUI(){
+    const state = loadState() || {
+      lastDrawDate: null,
+      streak: 0,
+      lastQuoteIndex: null,
+      history: [],
+      coins: 0,
+      coinsReceivedForDate: null
+    };
+    const today = getTodayPoland();
+
+    // Cytat i przycisk losowania
+    if(state.lastDrawDate === today){
+      quoteBox.textContent = quotes[state.lastQuoteIndex];
+      btnDraw.disabled = true;
+      btnDraw.setAttribute('aria-disabled', 'true');
+    } else {
+      quoteBox.textContent = "Kliknij „Losuj Cytat”, aby rozpocząć.";
+      btnDraw.disabled = false;
+      btnDraw.setAttribute('aria-disabled', 'false');
+    }
+
+    // Passa
+    streakInfo.textContent = `Dzień passy: ${state.streak}`;
+
+    // Medale
+    const medalName = getCurrentMedal(state.streak);
+    currentMedal.textContent = `Aktualny medal: ${medalName}`;
+
+    // Monety
+    coinsInfo.textContent = `Monety: ${state.coins}`;
+
+    // Odbiór monet
+    if(state.lastDrawDate === today && state.coinsReceivedForDate !== today){
+      btnReceive.disabled = false;
+      btnReceive.setAttribute('aria-disabled', 'false');
+    } else {
+      btnReceive.disabled = true;
+      btnReceive.setAttribute('aria-disabled', 'true');
+    }
+
+    // Wylosuj ponownie (30 monet)
+    if(state.coins >= 30){
+      btnRedraw.disabled = false;
+      btnRedraw.setAttribute('aria-disabled', 'false');
+      document.getElementById('redraw-info').textContent = 'Możesz wylosować ponownie, koszt: 30 monet.';
+    } else {
+      btnRedraw.disabled = true;
+      btnRedraw.setAttribute('aria-disabled', 'true');
+      document.getElementById('redraw-info').textContent = 'Potrzebujesz 30 monet, aby wylosować cytat ponownie.';
+    }
+
+    // Odliczanie do północy czasu polskiego
+    const now = new Date();
+    // Oblicz czas do północy europejskiej w Warszawie
+    const tz = 'Europe/Warsaw';
+    const polandNowStr = new Intl.DateTimeFormat('pl-PL', {timeZone: tz, hour: '2-digit', minute:'2-digit', second:'2-digit', hour12:false}).format(now);
+    const polandNowParts = polandNowStr.split(':');
+    const polandNowDate = new Date(new Date().toLocaleDateString() + `T${polandNowParts[0]}:${polandNowParts[1]}:${polandNowParts[2]}`);
+    // Ustaw północ na jutro w strefie
+    let midnight = new Date(polandNowDate);
+    midnight.setDate(midnight.getDate()+1);
+    midnight.setHours(0,0,0,0);
+    let diffMs = midnight - now;
+    if(diffMs < 0) diffMs = 0;
+    let diffH = Math.floor(diffMs / (1000*60*60));
+    let diffM = Math.floor((diffMs % (1000*60*60)) / (1000*60));
+    let diffS = Math.floor((diffMs % (1000*60)) / 1000);
+    countdown.textContent = `Możesz losować ponownie za: ${diffH.toString().padStart(2,'0')}:${diffM.toString().padStart(2,'0')}:${diffS.toString().padStart(2,'0')}`;
+
+    // Historia
+    renderHistory(state.history);
+  }
+
+  // Przycisk losowania cytatu (raz dziennie)
+  btnDraw.addEventListener('click', () => {
+    const state = loadState() || {
+      lastDrawDate: null,
+      streak: 0,
+      lastQuoteIndex: null,
+      history: [],
+      coins: 0,
+      coinsReceivedForDate: null
+    };
+    const today = getTodayPoland();
+
+    if(state.lastDrawDate === today){
+      alert('Możesz losować tylko raz dziennie. Aby losować ponownie, użyj przycisku "Wylosuj ponownie" (koszt 30 monet).');
+      return;
+    }
+
+    if(state.lastDrawDate && isNextDay(state.lastDrawDate, today)){
+      state.streak +=1;
+    } else {
+      state.streak = 1;
+    }
+
+    state.lastDrawDate = today;
+    state.coinsReceivedForDate = null; // reset odbioru monet
+
+    // Losuj cytat inny niż ostatni
+    const newQuoteIdx = drawQuoteIndex(state.lastQuoteIndex);
+    state.lastQuoteIndex = newQuoteIdx;
+
+    // Dodaj do historii
+    state.history.push({date: today, quoteIndex: newQuoteIdx});
+
+    saveState(state);
+    updateUI();
+  });
+
+  // Odbieranie monet za passę
+  btnReceive.addEventListener('click', () => {
+    const state = loadState() || {
+      lastDrawDate: null,
+      streak: 0,
+      lastQuoteIndex: null,
+      history: [],
+      coins: 0,
+      coinsReceivedForDate: null
+    };
+    const today = getTodayPoland();
+
+    if(state.lastDrawDate === today && state.coinsReceivedForDate !== today){
+      // Dodaj monety: 10 x liczba dni passy
+      const coinsToAdd = 10 * state.streak;
+      state.coins += coinsToAdd;
+      state.coinsReceivedForDate = today;
+      alert(`Odebrałeś ${coinsToAdd} monet za dzisiejszą passę!`);
+      saveState(state);
+      updateUI();
+    } else {
+      alert('Monety za dzisiaj już odebrane lub najpierw wylosuj cytat.');
+    }
+  });
+
+  // Wylosuj ponownie - koszt 30 monet
+  btnRedraw.addEventListener('click', () => {
+    const state = loadState() || {
+      lastDrawDate: null,
+      streak: 0,
+      lastQuoteIndex: null,
+      history: [],
+      coins: 0,
+      coinsReceivedForDate: null
+    };
+    if(state.coins < 30){
+      alert('Nie masz wystarczająco monet (30), aby wylosować ponownie.');
+      return;
+    }
+
+    // Pobierz cytat inny niż ostatnio
+    const newQuoteIdx = drawQuoteIndex(state.lastQuoteIndex);
+    state.lastQuoteIndex = newQuoteIdx;
+
+    // Odejmij monety
+    state.coins -= 30;
+
+    // Dodaj do historii (z dzisiejszą datą i oznaczeniem "ponownie")
+    const today = getTodayPoland();
+    state.history.push({date: today + " (ponownie)", quoteIndex: newQuoteIdx});
+
+    saveState(state);
+    updateUI();
+  });
+
+  // Aktualizacja UI co sekundę dla odliczania
+  setInterval(updateUI, 1000);
+  updateUI();
+})();
+</script>
+</body>
+</html>
